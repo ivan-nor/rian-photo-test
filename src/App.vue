@@ -1,26 +1,59 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="column">
+    <UnprocessedComponent  :unprocessed="unprocessed" :products="products" />
+    <DevelopComponent :develop="develop" :products="products" />
+    <DoneComponent :done="done" :products="products" />
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import UnprocessedComponent from './components/UnprocessedComponent.vue'
+import DevelopComponent from './components/DevelopComponent.vue'
+import DoneComponent from './components/DoneComponent.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    UnprocessedComponent,
+    DevelopComponent,
+    DoneComponent
+  },
+  data () {
+    return {
+      products: [], // { 'id', 'title', 'price', 'description', 'category', 'image', 'rating' }
+      unprocessed: [], // массивы с айдишниками
+      develop: [],
+      done: []
+    }
+  },
+
+  async created () { // выделить в отдельную функцию обновления, запуск и при создании, и после добавления задачи
+    await fetch('https://fakestoreapi.com/products')
+      .then(res => res.json())
+      .then(json => {
+        this.products = json
+
+        const responseIdies = json.map(({ id }) => id)
+        console.log('RESPONSE', json, responseIdies)
+
+        const oldTaskIdies = [...this.unprocessed, ...this.develop, ...this.done]
+        console.log(oldTaskIdies)
+
+        this.unprocessed = responseIdies
+      })
+  },
+  watch: {
+    unprocessed () { // отразить новую задачу в tasks.unprocessed
+      console.log('WATCH unprocessed')
+    },
+    products () {
+      console.log('WTAHC products', this.products)
+    }
   }
+  // сделать событие добавления карточки
 }
 </script>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style>
+
 </style>
