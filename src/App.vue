@@ -1,10 +1,11 @@
 <template>
   <div class="grid-container">
-      <ColumnComponent v-for="key in Object.keys(tasks)"
+      <ColumnComponent v-for="key in Object.keys(productsState)"
         :key="key"
         :status="key"
         :products="products"
-        :idiesOfTasks="tasks[key]"
+        :idiesOfProducts="productsState[key]"
+        @saveChanges="handleEditCard"
       />
   </div>
 </template>
@@ -20,38 +21,57 @@ export default {
   data () {
     return {
       products: [], // { 'id', 'title', 'price', 'description', 'category', 'image', 'rating' }
-      tasks: {
+      productsState: {
         unprocessed: [], // массивы с айдишниками
-        // develop: [77, 76],
-        // done: [55, 54]
-      },
-      unprocessed: [], // массивы с айдишниками
-      develop: [],
-      done: []
+        develop: [],
+        done: []
+      }
     }
   },
 
   async created () { // выделить в отдельную функцию обновления, запуск и при создании, и после добавления задачи
-    await fetch('https://fakestoreapi.com/products')
-      .then(res => res.json())
-      .then(json => {
-        this.products = json.slice(0, 3)
+    const products = await this.getProducts()
+    const sliced = products.slice(0, 10)
+    console.log('CREATE APP', sliced, sliced.map((p) => p.id))
+    this.productsState.unprocessed = sliced.map((p) => p.id)
+    this.products = this.sortedOnRating(sliced)
+  },
+  methods: {
+    async getProducts () {
+      return await fetch('https://fakestoreapi.com/products')
+        .then((res) => res.json())
+        .then((products) => {
+          // const prevProductIdies = [...this.productsState.unprocessed, ...this.productsState.develop, ...this.productsState.done]
+          // console.log('GET PROD prev products idies', prevProductIdies)
 
-        const responseIdies = this.products.map(({ id }) => id)
-        console.log('RESPONSE', this.products, responseIdies)
-
-        // const oldTaskIdies = [...this.unprocessed, ...this.develop, ...this.done]
-        // console.log(oldTaskIdies)
-
-        this.tasks = { ...this.tasks, unprocessed: responseIdies }
-      })
+          return products
+        })
+    },
+    // Метод для обработки события edit-card
+    handleEditCard (cardId, editedDescription, editedPrice) {
+      // Обновите состояние или выполните другие действия на основе события
+      console.log('Событие saveChanges получено в App.vue', cardId, editedDescription, editedPrice)
+      // Например, обновите products или productsState в соответствии с изменениями
+      let [currentProduct] = this.products.filter(({ id }) => id === cardId)
+      const productsWithoutCurrent = this.products.filter(({ id }) => id !== cardId)
+      console.log('curr prod', currentProduct, currentProduct.id)
+      currentProduct = { ...currentProduct, description: editedDescription, price: editedPrice }
+      const newProducts = [...productsWithoutCurrent, currentProduct]
+      this.products = this.sortedOnRating(newProducts)
+    },
+    sortedOnRating (arr) {
+      console.log('SORTED before', arr)
+      const sorted = arr.sort((a, b) => (a.rating.rate < b.rating.rate) ? 1 : -1)
+      console.log('SORTED after', sorted)
+      return sorted
+    }
   },
   watch: {
-    tasks () { // отразить новую задачу в tasks.unprocessed
-      console.log('WATCH unprocessed')
+    productsState () { // отразить новую задачу в tasks
+      console.log('WATCH products state', this.productsState)
     },
     products () {
-      // console.log('WTAHC products', this.products)
+      console.log('WATCH products', this.products)
     }
   }
   // сделать событие добавления карточки
