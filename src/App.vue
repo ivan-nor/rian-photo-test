@@ -1,27 +1,20 @@
 <template>
-  <div class="flex-container">
-    <div class="column" v-for="key in Object.keys(tasks)" :key="key">
-    <!--   <UnprocessedComponent  :unprocessed="unprocessed" :products="products" />
-      <DevelopComponent :develop="develop" :products="products" />
-      <DoneComponent :done="done" :products="products" />  -->
-
-      <ColumnComponent  :status="key" :products="products" :idiesOfTasks="tasks[key]"/>
-    </div>
+  <div class="grid-container">
+      <ColumnComponent v-for="key in Object.keys(tasks)"
+        :key="key"
+        :status="key"
+        :products="products"
+        :idiesOfTasks="tasks[key]"
+      />
   </div>
 </template>
 
 <script>
-// import UnprocessedComponent from './components/UnprocessedComponent.vue'
-// import DevelopComponent from './components/DevelopComponent.vue'
-// import DoneComponent from './components/DoneComponent.vue'
 import ColumnComponent from './components/ColumnComponent.vue'
 
 export default {
   name: 'App',
   components: {
-    // UnprocessedComponent,
-    // DevelopComponent,
-    // DoneComponent,
     ColumnComponent
   },
   data () {
@@ -42,16 +35,15 @@ export default {
     await fetch('https://fakestoreapi.com/products')
       .then(res => res.json())
       .then(json => {
-        this.products = json
+        this.products = json.slice(0, 3)
 
-        const responseIdies = json.map(({ id }) => id)
-        console.log('RESPONSE', json, responseIdies)
+        const responseIdies = this.products.map(({ id }) => id)
+        console.log('RESPONSE', this.products, responseIdies)
 
-        const oldTaskIdies = [...this.unprocessed, ...this.develop, ...this.done]
-        console.log(oldTaskIdies)
+        // const oldTaskIdies = [...this.unprocessed, ...this.develop, ...this.done]
+        // console.log(oldTaskIdies)
 
-        this.unprocessed = responseIdies
-        this.tasks.unprocessed = responseIdies
+        this.tasks = { ...this.tasks, unprocessed: responseIdies }
       })
   },
   watch: {
@@ -59,7 +51,7 @@ export default {
       console.log('WATCH unprocessed')
     },
     products () {
-      console.log('WTAHC products', this.products)
+      // console.log('WTAHC products', this.products)
     }
   }
   // сделать событие добавления карточки
@@ -67,15 +59,9 @@ export default {
 </script>
 
 <style>
-.flex-container {
-  display: flex;
-  justify-content: space-between; /* Распределяет колонки равномерно по горизонтали */
-  gap: 20px; /* Расстояние между карточками */
-}
-
-.column {
-  flex-basis: calc(33.33% - 20px); /* Ширина каждой колонки, вычитая расстояние */
-  display: flex;
-  flex-direction: column;
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Три колонки с равной шириной */
+  gap: 10px; /* Расстояние между колонками */
 }
 </style>
