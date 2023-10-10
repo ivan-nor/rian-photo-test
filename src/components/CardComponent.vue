@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card" v-if="product">
     <h2>{{ product.title }}</h2>
     <p class="category">{{ product.category }}</p>
     <img :src="product.image" alt="{{ product.title }}">
@@ -25,24 +25,54 @@
 export default {
   name: 'CardComponent',
   props: {
-    product: Object,
+    item: Object,
     status: String
   },
   data () {
-    return {}
+    return {
+      product: { ...this.item },
+      isEditing: false,
+      editedDescription: '',
+      editedPrice: null
+    }
+  },
+  methods: {
+    editCard () {
+      // Открываем форму редактирования
+      console.log('click editCard')
+      this.isEditing = true
+      // Заполняем поля формы текущими значениями описания и цены
+      this.editedDescription = this.product.description
+      this.editedPrice = this.product.price
+    },
+    saveChanges () {
+      // Сохраняем измененные значения
+      console.log('click saveChanges')
+      this.product.description = this.editedDescription
+      this.product.price = parseFloat(this.editedPrice)
+      // Закрываем форму редактирования
+      this.isEditing = false
+      // Генерируем событие и передаем данные в родительский компонент (App.vue)
+      this.$emit('saveChanges', this.product.id, this.editedDescription, this.editedPrice)
+    },
+    cancelEdit () {
+      console.log('click cancelEdit')
+      // Отменяем редактирование и закрываем форму
+      this.isEditing = false
+    }
   }
 }
 </script>
 
 <style>
 .card {
-  background-color: #89a6b1;
-  border: 1px solid #ddd;
+  border: 3px solid #161515;
   padding: 10px;
   height: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: justify;
+  text-align: justify;
 }
 
 .edit-button {
