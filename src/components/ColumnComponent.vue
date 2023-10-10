@@ -1,6 +1,6 @@
 <template>
   <div class="column" :style="calculateColumnStyle">
-    <CardComponent :status="status" :style="calculateCardStyle" v-for="product of tasks" :key="product.id"/>
+    <CardComponent :status="status" :style="calculateCardStyle" v-for="item of tasks" :key="item.id" :item="item" @saveChanges="handleEditCardInternal"/>
   </div>
 </template>
 
@@ -11,7 +11,7 @@ export default {
   name: 'ColumnComponent',
   components: { CardComponent },
   props: {
-    idiesOfTasks: Array,
+    idiesOfProducts: Array,
     products: Array,
     status: String
   },
@@ -23,20 +23,22 @@ export default {
     getComputedStyle (status, type) {
       const mappedStyles = {
         unprocessed: (t) => (t === 'card') ? 'lightblue' : 'blue',
-        develop: (t) => (t === 'card') ? 'limon' : 'yellow',
+        develop: (t) => (t === 'card') ? 'lime' : 'yellow',
         done: (t) => (t === 'card') ? 'cyan' : 'green'
       }
 
       return { backgroundColor: mappedStyles[this.status](type) }
+    },
+    handleEditCardInternal (cardId, editedDescription, editedPrice) {
+      // Обрабатываем событие save cahnge из CardComponent в ColumnComponent
+      // Затем передаем его вверх до App
+      this.$emit('saveChanges', cardId, editedDescription, editedPrice)
     }
-  },
-  created () {
-    console.log('CREAATE Column', this.status, this.idiesOfTasks)
   },
   computed: {
     tasks () {
-      console.log('COLUMN computed tasks', this.idiesOfTasks, this.products, this.status)
-      return this.products.filter((product) => this.idiesOfTasks.includes(product.id))
+      console.log('COLUMN computed tasks', this.idiesOfProducts, this.products, this.status)
+      return this.products.filter((product) => this.idiesOfProducts.includes(product.id))
     },
     calculateColumnStyle () {
       return this.getComputedStyle(this.status, 'column')
@@ -45,8 +47,8 @@ export default {
       return this.getComputedStyle(this.status, 'card')
     }
   },
-  updated () {
-    // console.log('COLUMN tasks', this.tasks)
+  created () {
+    // console.log('COLUMN created')
   }
 }
 </script>
