@@ -1,9 +1,9 @@
 <template>
   <div class="card" v-if="product">
-    <h2>{{ product.title }}</h2>
+    <h6>{{ product.title }}</h6>
     <p class="category">{{ product.category }}</p>
-    <img :src="product.image" alt="{{ product.title }}">
-    <p class="description" v-if="!isEditing">{{ product.description }}</p>
+    <!-- <img :src="product.image" alt="{{ product.title }}"> -->
+    <!-- <p class="description" v-if="!isEditing">{{ product.description }}</p> -->
     <p class="price" v-if="!isEditing">{{ product.price }} руб.</p>
     <p class="rating">Рейтинг: {{ product.rating }}</p>
 
@@ -17,6 +17,8 @@
       <button @click="saveChanges">Сохранить</button>
       <button @click="cancelEdit">Отменить</button>
     </div>
+    <button @click="setPrevStatus">Set Prev Status</button>
+    <!-- <button @click="setNextStatus">Set Next Status</button> -->
   </div>
 </template>
 
@@ -59,6 +61,9 @@ export default {
       console.log('click cancelEdit')
       // Отменяем редактирование и закрываем форму
       this.isEditing = false
+    },
+    setPrevStatus () {
+      this.$emit('setStatus', this.product.id, this.status)
     }
   }
 }

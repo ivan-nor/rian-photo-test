@@ -6,6 +6,7 @@
         :products="products"
         :idiesOfProducts="productsState[key]"
         @saveChanges="handleEditCard"
+        @setStatus="handlerSetStatus"
       />
   </div>
 </template>
@@ -59,6 +60,13 @@ export default {
       const newProducts = [...productsWithoutCurrent, currentProduct]
       this.products = this.sortedOnRating(newProducts)
     },
+    handlerSetStatus (cardId, prevStatus) {
+      const getNextStatus = (currStatus) => (currStatus === 'unprocessed') ? 'develop' : 'done'
+      this.productsState[prevStatus] = this.productsState[prevStatus].filter((id) => id !== cardId)
+      this.productsState[getNextStatus(prevStatus)].push(cardId)
+
+      console.log('in App.vue, card id: ', cardId, prevStatus, getNextStatus(prevStatus))
+    },
     sortedOnRating (arr) {
       console.log('SORTED before', arr)
       const sorted = arr.sort((a, b) => (a.rating.rate < b.rating.rate) ? 1 : -1)
@@ -72,6 +80,15 @@ export default {
     },
     products () {
       console.log('WATCH products', this.products)
+    },
+    'productsState.unprocessed' () {
+      console.log('WATCH unprocessed')
+    },
+    'productsState.develop' () {
+      console.log('WATCH develop')
+    },
+    'productsState.done' () {
+      console.log('WATCH done')
     }
   }
   // сделать событие добавления карточки

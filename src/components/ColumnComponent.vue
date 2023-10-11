@@ -1,6 +1,14 @@
 <template>
   <div class="column" :style="calculateColumnStyle">
-    <CardComponent :status="status" :style="calculateCardStyle" v-for="item of tasks" :key="item.id" :item="item" @saveChanges="handleEditCardInternal"/>
+    <CardComponent
+    :status="status"
+    :style="calculateCardStyle"
+    v-for="item of tasks"
+    :key="item.id"
+    :item="item"
+    @saveChanges="handleEditCardInternal"
+    @setStatus="handleSetStatusCardInternal"
+  />
   </div>
 </template>
 
@@ -22,9 +30,9 @@ export default {
   methods: {
     getComputedStyle (status, type) {
       const mappedStyles = {
-        unprocessed: (t) => (t === 'card') ? 'lightblue' : 'blue',
-        develop: (t) => (t === 'card') ? 'lime' : 'yellow',
-        done: (t) => (t === 'card') ? 'cyan' : 'green'
+        unprocessed: (t) => (t === 'card') ? 'DeepSkyBlue' : 'LightSteelBlue',
+        develop: (t) => (t === 'card') ? 'Moccasin' : 'khaki',
+        done: (t) => (t === 'card') ? 'MediumSpringGreen' : 'lightgreen'
       }
 
       return { backgroundColor: mappedStyles[this.status](type) }
@@ -33,6 +41,9 @@ export default {
       // Обрабатываем событие save cahnge из CardComponent в ColumnComponent
       // Затем передаем его вверх до App
       this.$emit('saveChanges', cardId, editedDescription, editedPrice)
+    },
+    handleSetStatusCardInternal (cardId, prevStatus) {
+      this.$emit('setStatus', cardId, prevStatus)
     }
   },
   computed: {
