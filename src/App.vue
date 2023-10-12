@@ -1,4 +1,25 @@
 <template>
+  <div class="addForm">
+    <button @click="handleAddProduct" v-if="!isAddProduct">Add New Product</button>
+      <form v-if="isAddProduct">
+        <h3>Добавить товар:</h3>
+
+        <label for="inputTitle">Название:</label>
+        <input type="text" v-model="inputTitle">
+
+        <label for="inputCategory">Категория:</label>
+        <input type="text" v-model="inputCategory">
+
+        <label for="inputDescription">Описание:</label>
+        <textarea v-model="inputDescription" rows="5"></textarea>
+
+        <label for="editedPrice">Цена:</label>
+        <input type="number" min="0" v-model="inputPrice">
+
+        <button @click="handleSaveProduct">Save</button>
+        <button @click="cancelAddingProduct">Cancel</button>
+      </form>
+  </div>
   <div class="grid-container">
     <div class="column drop-zone"
       v-for="key in Object.keys(productsState)"
@@ -37,7 +58,13 @@ export default {
         unprocessed: [],
         develop: [],
         done: []
-      }
+      },
+      isAddProduct: false, // добавить добавоенпе карточки
+      inputDescription: '',
+      inputPrice: null,
+      inputTitle: '',
+      inputCategory: '',
+      counterId: null
     }
   },
   async created () { // выделить в отдельную функцию обновления, запуск и при создании, и после добавления задачи
@@ -46,12 +73,15 @@ export default {
     this.productsState.unprocessed = sliced.map((p) => p.id) // все продукты кладем в стейт, все айди в необработанные
     this.products = this.sortedOnRating(sliced)
     console.log('CREATE APP', sliced, sliced.map((p) => p.id))
+
+    this.counterId = Math.max(...this.products.map(p => p.id)) + 1
+    console.log('counterID', this.counterId)
   },
   methods: { // сделать событие добавления карточки
     async getProducts () { // здесь возможно в конце  добавить функционал обновления после добавления новой карточки продукта
       return await fetch('https://fakestoreapi.com/products')
         .then((res) => res.json())
-        .then((products) => {
+        .then((products) => { // переделать добавление карточек
           // const prevProductIdies = [...this.productsState.unprocessed, ...this.productsState.develop, ...this.productsState.done]
           // console.log('GET PROD prev products idies', prevProductIdies)
           return products
@@ -89,6 +119,12 @@ export default {
     handleSetStatus (productId, prevStatus) {
       const nextStatus = (prevStatus === 'unprocessed') ? 'develop' : 'done'
       this.moveProduct(productId, prevStatus, nextStatus)
+    },
+    handleAddProduct () {
+      this.isAddProduct = true
+    },
+    cancelAddingProduct () {
+      this.isAddProduct = false
     },
     sortedOnRating (arr) { // сортируем каждый раз когда идет обновление
       return arr.sort((a, b) => (a.rating.rate < b.rating.rate) ? 1 : -1)
@@ -135,7 +171,7 @@ export default {
 .grid-container {
   display: flex;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 20px;
   max-width: 1000px;
   padding: 10px;
 }
@@ -144,11 +180,12 @@ export default {
   flex: 0 0 calc(33.33%);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
   width: 200px; /* Фиксированная ширина для колонки */
-  padding: 10px;
+  padding: 20px;
   background-color: #3498db;
   border: 1px solid #000;
+  border-radius: 5px;
   min-height: 800px;
 }
 
