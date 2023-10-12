@@ -110,7 +110,7 @@ export default {
 <style>
 .card {
   border: 1px solid #161515;
-  padding: 10px;
+  padding: 20px;
   min-height: 100px;
   display: flex;
   flex-direction: column;
@@ -172,17 +172,17 @@ h2 {
 
 .price {
   font-weight: bold;
-  color: #ff5733;
+
   font-family: Arial, sans-serif;
 }
 
 .category {
-  color: #888;
+
   font-family: Arial, sans-serif;
 }
 
 .rating {
-  color: #f39c12;
+
   font-family: Arial, sans-serif;
 }
 </style>
