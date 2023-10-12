@@ -1,15 +1,24 @@
 <template>
   <div class="grid-container">
-      <div class="column" v-for="key in Object.keys(productsState)" :key="key" :style="getColumnStyle(key)">
-        <div v-for="item in getListProducts(key)" :key="item.id">
-          <CardComponent
-            :status="key"
-            :item="item"
-            @saveChanges="handleEditCard"
-            @setStatus="handleSetStatus"
-          />
-        </div>
-  </div>
+    <div class="column drop-zone"
+      v-for="key in Object.keys(productsState)"
+      :key="key"
+      :style="getColumnStyle(key)"
+      @drop="ondrop($event, key)"
+      @dragover.prevent
+      @dragenter.prevent
+    >
+      <div v-for="item in getListProducts(key)" :key="item.id">
+        <CardComponent
+          :status="key"
+          :item="item"
+          @saveChanges="handleEditCard"
+          @setStatus="handleSetStatus"
+          draggable="true"
+          @dragstart="ondragstart($event, item, key)"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -48,6 +57,25 @@ export default {
           return products
         })
     },
+    ondragstart (evt, item, status) {
+      console.log('CARD dregStart', item, status)
+      evt.dataTransfer.setData('productId', item.id)
+      evt.dataTransfer.setData('prevStatus', status)
+      evt.dataTransfer.dropEffect = 'move'
+      evt.dataTransfer.effectAllowed = 'move'
+    },
+    ondrop (evt, nextStatus) {
+      const productId = evt.dataTransfer.getData('productId')
+      const prevStatus = evt.dataTransfer.getData('prevStatus')
+      console.log('ON DROP !!!', productId, prevStatus, nextStatus)
+      this.moveProduct(productId, prevStatus, nextStatus)
+    },
+    moveProduct (productId, prevStatus, nextStatus) {
+      this.productsState[prevStatus] = [...this.productsState[prevStatus].filter((id) => id !== +productId)]
+      this.productsState[nextStatus] = [...this.productsState[nextStatus], +productId]
+
+      console.log('in App.vue, card id: ', typeof productId, prevStatus, this.productsState[prevStatus], this.productsState[nextStatus])
+    },
     handleEditCard (cardId, editedDescription, editedPrice) { // Метод для обработки события edit-card
       console.log('Событие saveChanges получено в App.vue', cardId, editedDescription, editedPrice)
 
@@ -58,13 +86,9 @@ export default {
       const newProducts = [...productsWithoutCurrent, currentProduct]
       this.products = this.sortedOnRating(newProducts)
     },
-    handleSetStatus (cardId, prevStatus) {
-      const getNextStatus = (currStatus) => (currStatus === 'unprocessed') ? 'develop' : 'done'
-
-      this.productsState[prevStatus] = [...this.productsState[prevStatus].filter((id) => id !== cardId)]
-      this.productsState[getNextStatus(prevStatus)] = [...this.productsState[getNextStatus(prevStatus)], cardId]
-
-      console.log('in App.vue, card id: ', cardId, prevStatus, getNextStatus(prevStatus), this.productsState[prevStatus], this.productsState[getNextStatus(prevStatus)])
+    handleSetStatus (productId, prevStatus) {
+      const nextStatus = (prevStatus === 'unprocessed') ? 'develop' : 'done'
+      this.moveProduct(productId, prevStatus, nextStatus)
     },
     sortedOnRating (arr) { // сортируем каждый раз когда идет обновление
       return arr.sort((a, b) => (a.rating.rate < b.rating.rate) ? 1 : -1)
@@ -82,7 +106,9 @@ export default {
       }
     },
     getListProducts (status) {
-      return this.products.filter((p) => this.productsState[status].includes(p.id))
+      const filtered = this.products.filter((p) => this.productsState[status].includes(p.id))
+      const sorted = this.sortedOnRating(filtered)
+      return sorted
     }
   },
   watch: {
@@ -92,15 +118,15 @@ export default {
     // products () {
     //   console.log('WATCH products', this.products)
     // },
-    // 'productsState.unprocessed' () {
-    //   console.log('WATCH unprocessed', this.productsState.unprocessed)
-    // },
-    // 'productsState.develop' () {
-    //   console.log('WATCH develop', this.productsState.develop)
-    // },
-    // 'productsState.done' () {
-    //   console.log('WATCH done', this.productsState.done)
-    // }
+    'productsState.unprocessed' () {
+      console.log('WATCH unprocessed', this.productsState.unprocessed)
+    },
+    'productsState.develop' () {
+      console.log('WATCH develop', this.productsState.develop)
+    },
+    'productsState.done' () {
+      console.log('WATCH done', this.productsState.done)
+    }
   }
 }
 </script>
