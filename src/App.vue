@@ -96,11 +96,11 @@ export default {
     getColumnStyle (status) {
       switch (status) {
         case 'unprocessed':
-          return { backgroundColor: 'red' }
+          return { backgroundColor: 'LightCoral' }
         case 'develop':
-          return { backgroundColor: 'yellow' }
+          return { backgroundColor: 'Gold' }
         case 'done':
-          return { backgroundColor: 'green' }
+          return { backgroundColor: 'MediumAquamarine' }
         default:
           return { backgroundColor: 'gray' }
       }
@@ -134,16 +134,18 @@ export default {
 <style>
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Три колонки с равной шириной */
-  gap: 10px; /* Расстояние между колонками */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
 .column {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Расстояние между карточками внутри колонки */
-  max-width: 300px; /* Максимальная ширина колонки */
-  background-color: #3498db;
+  gap: 10px;
+  max-width: 200px; /* Фиксированная ширина для колонки */
   padding: 10px;
+  background-color: #3498db;
+  border: 1px solid #000;
+  min-height: 800px;
 }
 </style>

@@ -1,14 +1,14 @@
 <template>
-  <div class="card" v-if="product">
+  <div class="card" v-if="product" :style="getCardStyle">
     <h6>{{ product.title }}</h6>
     <p class="category">{{ product.category }}</p>
-    <!-- <img :src="product.image" alt="{{ product.title }}"> -->
-    <!-- <p class="description" v-if="!isEditing">{{ product.description }}</p> -->
+    <img :src="product.image" alt="{{ product.title }}">
+    <p class="description" v-if="!isEditing">{{ product.description }}</p>
     <p class="price" v-if="!isEditing">{{ product.price }} руб.</p>
     <p class="rating">Рейтинг: {{ product.rating }}</p>
-
     <button class="edit-button" @click="editCard" v-if="!isEditing">Редактировать</button>
-    <div class="edit-form" v-if="isEditing">
+
+    <div class="edit-form" v-if="isEditing" :style="getFormStyle">
       <h3>Редактировать товар</h3>
       <label for="editedDescription">Описание:</label>
       <textarea id="editedDescription" v-model="editedDescription"></textarea>
@@ -17,7 +17,7 @@
       <button @click="saveChanges">Сохранить</button>
       <button @click="cancelEdit">Отменить</button>
     </div>
-    <button @click="setPrevStatus">Set Prev Status</button>
+    <button name="set-prev-status" @click="setPrevStatus" v-if="status !== 'done'">{{ getButtonText }}</button>
     <!-- <button @click="setNextStatus">Set Next Status</button> -->
   </div>
 </template>
@@ -65,31 +65,93 @@ export default {
     setPrevStatus () {
       this.$emit('setStatus', this.product.id, this.status)
     }
+  },
+  computed: {
+    getCardStyle () {
+      switch (this.status) {
+        case 'unprocessed':
+          return { backgroundColor: 'Plum' }
+        case 'develop':
+          return { backgroundColor: 'Khaki' }
+        case 'done':
+          return { backgroundColor: 'LightGreen' }
+        default:
+          return { backgroundColor: 'gray' }
+      }
+    },
+    getFormStyle () {
+      switch (this.status) {
+        case 'unprocessed':
+          return { backgroundColor: 'LightPink' }
+        case 'develop':
+          return { backgroundColor: 'Moccasin' }
+        case 'done':
+          return { backgroundColor: 'PaleGreen' }
+        default:
+          return { backgroundColor: 'gray' }
+      }
+    },
+    getButtonText () {
+      switch (this.status) {
+        case 'unprocessed':
+          return 'Взять в работу'
+        case 'develop':
+          return 'Завершить'
+        case 'done':
+          return null
+        default:
+          return null
+      }
+    }
   }
 }
 </script>
 
 <style>
 .card {
-  border: 3px solid #161515;
+  border: 1px solid #161515;
   padding: 10px;
-  height: auto;
+  min-height: 100px;
   display: flex;
   flex-direction: column;
   align-items: justify;
   text-align: justify;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  margin: 10px 0;
 }
 
-.edit-button {
+.edit-button,
+button[name="set-prev-status"] {
   background-color: #ad3288;
   color: #fff;
   border: none;
   padding: 5px 10px;
   cursor: pointer;
+  margin: 5px 0;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  border-radius: 10px;
+}
+
+.edit-form {
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px; /* Закругленные углы для формы */
+  display: flex;
+  flex-direction: column;
+  align-items: justify;
+  text-align: justify;
+  margin: 5px 0;
+  color: #333;
+  font-family: Arial, sans-serif;
 }
 
 .card p {
-  margin: 0; /* Убираем отступы внутри параграфа */
+  margin: 0;
 }
 
 h2 {
@@ -104,24 +166,29 @@ img {
 .card img {
   max-width: 100%;
   max-height: 100%;
-  width: auto; /* Добавляем ширину auto, чтобы изображение могло изменять размер */
-  height: auto; /* Добавляем высоту auto, чтобы изображение могло изменять размер */
-  object-fit: contain; /* Масштабировать изображение так, чтобы оно полностью помещалось */
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .description {
   margin: 10px 0;
+  font-family: Arial, sans-serif;
 }
 
 .price {
   font-weight: bold;
+  color: #ff5733;
+  font-family: Arial, sans-serif;
 }
 
 .category {
   color: #888;
+  font-family: Arial, sans-serif;
 }
 
 .rating {
   color: #f39c12;
+  font-family: Arial, sans-serif;
 }
 </style>
