@@ -133,19 +133,24 @@ export default {
 
 <style>
 .grid-container {
-  display: grid;
+  display: flex;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  max-width: 1000px;
+  padding: 10px;
 }
 
 .column {
+  flex: 0 0 calc(33.33%);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 200px; /* Фиксированная ширина для колонки */
+  width: 200px; /* Фиксированная ширина для колонки */
   padding: 10px;
   background-color: #3498db;
   border: 1px solid #000;
   min-height: 800px;
 }
+
+body { margin: 0; }
 </style>

@@ -11,7 +11,7 @@
     <div class="edit-form" v-if="isEditing" :style="getFormStyle">
       <h3>Редактировать товар</h3>
       <label for="editedDescription">Описание:</label>
-      <textarea id="editedDescription" v-model="editedDescription"></textarea>
+      <textarea id="editedDescription" v-model="editedDescription" rows="10" autofocus></textarea>
       <label for="editedPrice">Цена:</label>
       <input type="number" id="editedPrice" v-model="editedPrice">
       <button @click="saveChanges">Сохранить</button>
@@ -118,7 +118,6 @@ export default {
   text-align: justify;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
-  margin: 10px 0;
 }
 
 .edit-button,
@@ -156,11 +155,6 @@ button[name="set-prev-status"] {
 
 h2 {
   margin: 10px 0;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
 }
 
 .card img {
