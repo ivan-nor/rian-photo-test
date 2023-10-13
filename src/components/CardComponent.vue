@@ -1,17 +1,17 @@
 <template>
-  <div class="card" v-if="product" :style="getCardStyle">
+  <div class="card" v-if="product">
+    <img :src="product.image" alt="{{ product.title }}">
     <h4>{{ product.title }}</h4>
     <p class="category">{{ product.category }}</p>
     <p class="description" v-if="!isEditing">
-      <img :src="product.image" alt="{{ product.title }}">
       {{ product.description }}
     </p>
     <p class="price" v-if="!isEditing">{{ product.price }} руб.</p>
-    <p class="rating">Рейтинг: {{ product.rating }}</p>
     <button class="edit-button" @click="editCard" v-if="!isEditing">Редактировать</button>
+    <button class="delete-button" @click="deleteCard" v-if="!isEditing">Удалить</button>
 
     <div class="edit-form" v-if="isEditing" :style="getFormStyle">
-      <h3>Редактировать товар</h3>
+      <h4>Редактировать товар</h4>
       <label for="editedDescription">Описание:</label>
       <textarea id="editedDescription" v-model="editedDescription" rows="10" autofocus></textarea>
       <label for="editedPrice">Цена:</label>
@@ -19,8 +19,7 @@
       <button @click="saveChanges">Сохранить</button>
       <button @click="cancelEdit">Отменить</button>
     </div>
-    <button name="set-prev-status" @click="setPrevStatus" v-if="status !== 'done'">{{ getButtonText }}</button>
-    <!-- <button @click="setNextStatus">Set Next Status</button> -->
+    <button name="changeStatus" @click="changeStatus" v-if="status !== 'done'">{{ getButtonText }}</button>
   </div>
 </template>
 
@@ -49,23 +48,20 @@ export default {
       this.editedDescription = this.product.description
       this.editedPrice = this.product.price
     },
+    deleteCard () {
+      this.$emit('deleteProduct', this.product, this.status)
+    },
     saveChanges () {
-      // Сохраняем измененные значения
-      console.log('click saveChanges')
-      this.product.description = this.editedDescription
-      this.product.price = parseFloat(this.editedPrice)
-      // Закрываем форму редактирования
       this.isEditing = false
-      // Генерируем событие и передаем данные в родительский компонент (App.vue)
-      this.$emit('saveChanges', this.product.id, this.editedDescription, this.editedPrice)
+      this.product.description = this.editedDescription
+      this.product.price = this.editedPrice
+      this.$emit('saveChanges', this.product)
     },
     cancelEdit () {
-      console.log('click cancelEdit')
-      // Отменяем редактирование и закрываем форму
       this.isEditing = false
     },
-    setPrevStatus () {
-      this.$emit('setStatus', this.product.id, this.status)
+    changeStatus () {
+      this.$emit('changeStatus', this.product.id, this.status)
     }
   },
   computed: {
@@ -120,21 +116,37 @@ export default {
   flex-direction: column;
   align-items: justify;
   text-align: justify;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 7px #dfdfdf;
   border-radius: 10px;
   background-color: #fff;
+  position: relative;
 }
 
-.edit-button,
-button[name="set-prev-status"] {
-  background-color: #ad3288;
+button {
+  background-color: grey;
   color: #fff;
   border: none;
   padding: 5px;
   cursor: pointer;
   font-weight: bold;
-  font-family: Arial, sans-serif;
   border-radius: 10px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.delete-button:hover {
+  background-color: red;
+}
+
+.edit-button:hover {
+  background-color: yellowgreen;
+}
+
+button[name="changeStatus"] {
+  background-color: rgb(11, 158, 11);
+}
+
+button[name="changeStatus"]:hover {
+  background-color: rgb(56, 106, 23);
 }
 
 .edit-form {
@@ -150,42 +162,55 @@ button[name="set-prev-status"] {
   text-align: justify;
   margin: 5px 0;
   color: #333;
-  font-family: Arial, sans-serif;
+  gap: 5px;
 }
 
-.card p {
+p {
   margin: 0;
-  font-size: x-small;
+  font-size: 12px;
+  line-height: 22px;
+  color: #999;
+}
+
+.card:hover {
+  box-shadow: 2px 2px 2px 2px rgba(255, 102, 51, 0.2);
 }
 
 .card h4 {
   margin: 0;
+  font-weight: 500;
+  display: block;
+  text-transform: uppercase;
+  color: #363636;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.card h4:hover {
+  color: #fbb72c;
 }
 
 .card img {
-  max-width: 100px;
-  max-height: 100px;
+  max-width: 100%;
+  max-height: 200px;
   width: auto;
   height: auto;
   object-fit: contain;
-  float: left;
-  margin-right: 6px;
-}
-
-.description {
-  font-family: Arial, sans-serif;
 }
 
 .price {
   font-weight: bold;
-  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #fbb72c;
+  font-weight: 600;
+  text-align: center;
 }
 
 .category {
-  font-family: Arial, sans-serif;
-}
-
-.rating {
-  font-family: Arial, sans-serif;
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ccc;
 }
 </style>

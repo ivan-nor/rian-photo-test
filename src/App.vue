@@ -1,24 +1,26 @@
 <template>
-  <div class="addForm">
-    <button class="addButton" @click="handleAddProduct" v-if="!isAddProduct">Add New Product</button>
-      <form v-if="isAddProduct">
-        <h3>Добавить товар:</h3>
+  <div >
+    <div class="addForm">
+      <button class="addButton" @click="handleClickAddingForm" v-if="!isAddProduct">Добавить товар</button>
+      <div v-if="isAddProduct" class="form-container">
+        <h3>Добавить товар</h3>
 
         <label for="inputTitle">Название:</label>
-        <input type="text" v-model="inputTitle">
+        <input type="text" v-model="form.title" name="inputTitle">
 
         <label for="inputCategory">Категория:</label>
-        <input type="text" v-model="inputCategory">
+        <input type="text" v-model="form.category" name="inputCategory">
 
         <label for="inputDescription">Описание:</label>
-        <textarea v-model="inputDescription" rows="5"></textarea>
+        <textarea v-model="form.description" name="inputDescription"></textarea>
 
-        <label for="editedPrice">Цена:</label>
-        <input type="number" min="0" v-model="inputPrice">
+        <label for="inputPrice">Цена:</label>
+        <input type="number" min="0" v-model="form.price" name="inputPrice">
 
-        <button @click="handleSaveProduct">Save</button>
-        <button @click="cancelAddingProduct">Cancel</button>
-      </form>
+        <button class="addProductButton" @click="handleAddProduct">Save</button>
+        <button class="cancelAddingProductButton" @click="cancelAddingProduct">Cancel</button>
+      </div>
+    </div>
   </div>
   <div class="grid-container">
     <div class="column drop-zone"
@@ -35,7 +37,8 @@
           :status="key"
           :item="item"
           @saveChanges="handleEditCard"
-          @setStatus="handleSetStatus"
+          @deleteProduct="handleDeleteCard"
+          @changeStatus="handleChangeStatus"
           draggable="true"
           @dragstart="ondragstart($event, item, key)"
         />
@@ -60,36 +63,43 @@ export default {
         develop: [],
         done: []
       },
-      isAddProduct: false, // добавить добавоенпе карточки
-      inputDescription: '',
-      inputPrice: null,
-      inputTitle: '',
-      inputCategory: '',
-      counterId: null
+      isAddProduct: false, // добавить добавленiе карточки
+      form: {
+        description: '',
+        price: null,
+        title: '',
+        category: '',
+        image: null
+      }
     }
   },
-  async created () { // выделить в отдельную функцию обновления, запуск и при создании, и после добавления задачи
-    const products = await this.getProducts() // запрос на сервер за продуктами
-    const sliced = products.slice(0, 3) // для разработки беру только несколько
-    this.productsState.unprocessed = sliced.map((p) => p.id) // все продукты кладем в стейт, все айди в необработанные
-    this.products = this.sortedOnRating(sliced)
-    console.log('CREATE APP', sliced, sliced.map((p) => p.id))
-
-    this.counterId = Math.max(...this.products.map(p => p.id)) + 1
-    console.log('counterID', this.counterId)
+  created () {
+    this.updateProducts()
   },
-  methods: { // сделать событие добавления карточки
-    async getProducts () { // здесь возможно в конце  добавить функционал обновления после добавления новой карточки продукта
+  methods: {
+    updateProducts () {
+      this.getProducts()
+    },
+    async getProducts () {
       return await fetch('https://fakestoreapi.com/products')
         .then((res) => res.json())
-        .then((products) => { // переделать добавление карточек
-          // const prevProductIdies = [...this.productsState.unprocessed, ...this.productsState.develop, ...this.productsState.done]
-          // console.log('GET PROD prev products idies', prevProductIdies)
-          return products
+        .then((products) => {
+          const prevProductIdies = [...this.productsState.unprocessed, ...this.productsState.develop, ...this.productsState.done]
+          const newProductsIdies = products.map((p) => p.id).filter((id) => !prevProductIdies.includes(id))
+          this.productsState.unprocessed = [...this.productsState.unprocessed, ...newProductsIdies]
+          this.products = this.sortedOnRating(products.slice(0, 3))
         })
     },
+    async addProduct (product) {
+      console.log('product', product)
+      await fetch('https://fakestoreapi.com/products', { method: 'POST', body: JSON.stringify(product) })
+      this.getProducts()
+    },
+    async editProduct (product) {
+      await fetch(`https://fakestoreapi.com/products/${product.id}`, { method: 'PATCH', body: JSON.stringify(product) })
+      this.getProducts()
+    },
     ondragstart (evt, item, status) {
-      console.log('CARD dregStart', item, status)
       evt.dataTransfer.setData('productId', item.id)
       evt.dataTransfer.setData('prevStatus', status)
       evt.dataTransfer.dropEffect = 'move'
@@ -98,31 +108,39 @@ export default {
     ondrop (evt, nextStatus) {
       const productId = evt.dataTransfer.getData('productId')
       const prevStatus = evt.dataTransfer.getData('prevStatus')
-      console.log('ON DROP !!!', productId, prevStatus, nextStatus)
       this.moveProduct(productId, prevStatus, nextStatus)
     },
     moveProduct (productId, prevStatus, nextStatus) {
       this.productsState[prevStatus] = [...this.productsState[prevStatus].filter((id) => id !== +productId)]
       this.productsState[nextStatus] = [...this.productsState[nextStatus], +productId]
-
-      console.log('in App.vue, card id: ', typeof productId, prevStatus, this.productsState[prevStatus], this.productsState[nextStatus])
     },
-    handleEditCard (cardId, editedDescription, editedPrice) { // Метод для обработки события edit-card
-      console.log('Событие saveChanges получено в App.vue', cardId, editedDescription, editedPrice)
-
-      let [currentProduct] = this.products.filter(({ id }) => id === cardId)
-      const productsWithoutCurrent = this.products.filter(({ id }) => id !== cardId)
-      console.log('curr prod', currentProduct, currentProduct.id)
-      currentProduct = { ...currentProduct, description: editedDescription, price: editedPrice }
-      const newProducts = [...productsWithoutCurrent, currentProduct]
-      this.products = this.sortedOnRating(newProducts)
+    handleEditCard (editedProduct) {
+      this.editProduct(editedProduct)
     },
-    handleSetStatus (productId, prevStatus) {
+    async handleDeleteCard (product, status) {
+      console.log('APP delete card', product.id)
+      this.products = this.products.filter((p) => p.id !== product.id)
+      this.productsState[status] = this.productsState[status].filter((id) => id !== product.id)
+      await fetch(`https://fakestoreapi.com/products/${product.id}`, { method: 'DELETE' })
+    },
+    handleChangeStatus (productId, prevStatus) {
       const nextStatus = (prevStatus === 'unprocessed') ? 'develop' : 'done'
       this.moveProduct(productId, prevStatus, nextStatus)
     },
-    handleAddProduct () {
+    handleClickAddingForm () {
       this.isAddProduct = true
+    },
+    handleAddProduct () {
+      console.log('APP adding product')
+      this.isAddProduct = false
+      this.addProduct({ ...this.form })
+      this.form = {
+        description: '',
+        price: null,
+        title: '',
+        category: '',
+        image: null
+      }
     },
     cancelAddingProduct () {
       this.isAddProduct = false
@@ -147,28 +165,17 @@ export default {
       const sorted = this.sortedOnRating(filtered)
       return sorted
     }
-  },
-  watch: {
-    // productsState () { // отразить новую задачу в tasks
-    //   console.log('WATCH products state', this.productsState)
-    // },
-    // products () {
-    //   console.log('WATCH products', this.products)
-    // },
-    'productsState.unprocessed' () {
-      console.log('WATCH unprocessed', this.productsState.unprocessed)
-    },
-    'productsState.develop' () {
-      console.log('WATCH develop', this.productsState.develop)
-    },
-    'productsState.done' () {
-      console.log('WATCH done', this.productsState.done)
-    }
   }
 }
 </script>
 
 <style>
+body {
+  margin: 0;
+  font-family: "Gill Sans", sans-serif;
+  background-color: #ebebeb;
+}
+
 .grid-container {
   display: flex;
   gap: 20px;
@@ -183,47 +190,60 @@ export default {
   gap: 20px;
   min-width: 200px; /* Фиксированная ширина для колонки */
   padding: 20px;
-  background-color: #3498db;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
-  border: 0px solid #000;
   border-radius: 5px;
   min-height: 800px;
-  align-items: flex-start;
+  align-items: center;
+}
+
+.column h1 {
+  margin: 0;
+  text-align: center;
+  color: #767c81;
 }
 
 .addButton {
-  background-color: #ad3288;
+  background-color: goldenrod;
   color: #fff;
   border: none;
-  padding: 5px 10px;
+  padding: 10px 20px;
   cursor: pointer;
   font-weight: bold;
-  font-family: Arial, sans-serif;
   border-radius: 10px;
-  justify-content: center;
+  text-align: center;
+  width: 300px;
+}
+
+button:hover {
+  background-color: blue;
 }
 
 .addForm {
-  max-width: 1000px;
   max-height: 100%;
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border-radius: 10px; /* Закругленные углы для формы */
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  align-items: justify;
+  align-items: center;
   text-align: justify;
   margin: 10px 10px;
   color: #333;
-  font-family: Arial, sans-serif;
+  padding: 10px 10px ;
+  background-color: #f9f9f9;
 }
 
-h1 {
-  margin: 0;
+.form-container {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 20px;
+  background-color: #f9f9f9;
 }
 
-body {
+.form-container h3 {
   margin: 0;
-  font-family: Arial, sans-serif;
+  text-align: center;
 }
 </style>
