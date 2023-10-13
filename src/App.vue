@@ -1,6 +1,6 @@
 <template>
   <div class="addForm">
-    <button @click="handleAddProduct" v-if="!isAddProduct">Add New Product</button>
+    <button class="addButton" @click="handleAddProduct" v-if="!isAddProduct">Add New Product</button>
       <form v-if="isAddProduct">
         <h3>Добавить товар:</h3>
 
@@ -29,6 +29,7 @@
       @dragover.prevent
       @dragenter.prevent
     >
+      <h1>{{ key }}</h1>
       <div v-for="item in getListProducts(key)" :key="item.id">
         <CardComponent
           :status="key"
@@ -132,11 +133,11 @@ export default {
     getColumnStyle (status) {
       switch (status) {
         case 'unprocessed':
-          return { backgroundColor: 'LightCoral' }
+          return { backgroundColor: 'Lavender' }
         case 'develop':
-          return { backgroundColor: 'Gold' }
+          return { backgroundColor: 'PaleGoldenrod' }
         case 'done':
-          return { backgroundColor: 'MediumAquamarine' }
+          return { backgroundColor: 'Aquamarine' }
         default:
           return { backgroundColor: 'gray' }
       }
@@ -170,24 +171,59 @@ export default {
 <style>
 .grid-container {
   display: flex;
-  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   max-width: 1000px;
   padding: 10px;
 }
 
 .column {
-  flex: 0 0 calc(33.33%);
+  flex-basis: 30%;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 200px; /* Фиксированная ширина для колонки */
+  min-width: 200px; /* Фиксированная ширина для колонки */
   padding: 20px;
   background-color: #3498db;
-  border: 1px solid #000;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
+  border: 0px solid #000;
   border-radius: 5px;
   min-height: 800px;
+  align-items: flex-start;
 }
 
-body { margin: 0; }
+.addButton {
+  background-color: #ad3288;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  border-radius: 10px;
+  justify-content: center;
+}
+
+.addForm {
+  max-width: 1000px;
+  max-height: 100%;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px; /* Закругленные углы для формы */
+  display: flex;
+  flex-direction: column;
+  align-items: justify;
+  text-align: justify;
+  margin: 10px 10px;
+  color: #333;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
 </style>

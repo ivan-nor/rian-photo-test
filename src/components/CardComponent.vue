@@ -1,9 +1,11 @@
 <template>
   <div class="card" v-if="product" :style="getCardStyle">
-    <h6>{{ product.title }}</h6>
+    <h4>{{ product.title }}</h4>
     <p class="category">{{ product.category }}</p>
-    <img :src="product.image" alt="{{ product.title }}">
-    <p class="description" v-if="!isEditing">{{ product.description }}</p>
+    <p class="description" v-if="!isEditing">
+      <img :src="product.image" alt="{{ product.title }}">
+      {{ product.description }}
+    </p>
     <p class="price" v-if="!isEditing">{{ product.price }} руб.</p>
     <p class="rating">Рейтинг: {{ product.rating }}</p>
     <button class="edit-button" @click="editCard" v-if="!isEditing">Редактировать</button>
@@ -68,21 +70,22 @@ export default {
   },
   computed: {
     getCardStyle () {
-      switch (this.status) {
-        case 'unprocessed':
-          return { backgroundColor: 'Plum' }
-        case 'develop':
-          return { backgroundColor: 'Khaki' }
-        case 'done':
-          return { backgroundColor: 'LightGreen' }
-        default:
-          return { backgroundColor: 'gray' }
-      }
+      return { backgroundColor: 'white' }
+      // switch (this.status) {
+      //   case 'unprocessed':
+      //     return { backgroundColor: 'Plum' }
+      //   case 'develop':
+      //     return { backgroundColor: 'Khaki' }
+      //   case 'done':
+      //     return { backgroundColor: 'LightGreen' }
+      //   default:
+      //     return { backgroundColor: 'gray' }
+      // }
     },
     getFormStyle () {
       switch (this.status) {
         case 'unprocessed':
-          return { backgroundColor: 'LightPink' }
+          return { backgroundColor: 'AliceBlue' }
         case 'develop':
           return { backgroundColor: 'Moccasin' }
         case 'done':
@@ -109,15 +112,17 @@ export default {
 
 <style>
 .card {
-  border: 1px solid #161515;
-  padding: 20px;
+  border: 1px solid #e1d6d6;
+  gap: 10px;
+  padding: 15px;
   min-height: 100px;
   display: flex;
   flex-direction: column;
   align-items: justify;
   text-align: justify;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  border-radius: 10px;
+  background-color: #fff;
 }
 
 .edit-button,
@@ -125,9 +130,8 @@ button[name="set-prev-status"] {
   background-color: #ad3288;
   color: #fff;
   border: none;
-  padding: 5px 10px;
+  padding: 5px;
   cursor: pointer;
-  margin: 5px 0;
   font-weight: bold;
   font-family: Arial, sans-serif;
   border-radius: 10px;
@@ -151,38 +155,37 @@ button[name="set-prev-status"] {
 
 .card p {
   margin: 0;
+  font-size: x-small;
 }
 
-h2 {
-  margin: 10px 0;
+.card h4 {
+  margin: 0;
 }
 
 .card img {
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 100px;
+  max-height: 100px;
   width: auto;
   height: auto;
   object-fit: contain;
+  float: left;
+  margin-right: 6px;
 }
 
 .description {
-  margin: 10px 0;
   font-family: Arial, sans-serif;
 }
 
 .price {
   font-weight: bold;
-
   font-family: Arial, sans-serif;
 }
 
 .category {
-
   font-family: Arial, sans-serif;
 }
 
 .rating {
-
   font-family: Arial, sans-serif;
 }
 </style>
