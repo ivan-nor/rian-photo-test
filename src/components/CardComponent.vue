@@ -1,5 +1,5 @@
 <template>
-  <div class="card" v-if="product">
+  <div class="card" v-if="product" :style="getCardStyle">
     <img :src="product.image" alt="{{ product.title }}">
     <h4>{{ product.title }}</h4>
     <p class="category">{{ product.category }}</p>
@@ -7,8 +7,8 @@
       {{ product.description }}
     </p>
     <p class="price" v-if="!isEditing">{{ product.price }} руб.</p>
-    <button class="edit-button" @click="editCard" v-if="!isEditing">Редактировать</button>
-    <button class="delete-button" @click="deleteCard" v-if="!isEditing">Удалить</button>
+    <button class="edit-button" @click="editProduct" v-if="!isEditing">Редактировать</button>
+    <button class="delete-button" @click="deleteProduct" v-if="!isEditing">Удалить</button>
 
     <div class="edit-form" v-if="isEditing" :style="getFormStyle">
       <h4>Редактировать товар</h4>
@@ -40,15 +40,13 @@ export default {
     }
   },
   methods: {
-    editCard () {
-      // Открываем форму редактирования
-      console.log('click editCard')
+    editProduct () {
       this.isEditing = true
-      // Заполняем поля формы текущими значениями описания и цены
       this.editedDescription = this.product.description
       this.editedPrice = this.product.price
+      this.$emit('editProduct', this.isEditing)
     },
-    deleteCard () {
+    deleteProduct () {
       this.$emit('deleteProduct', this.product, this.status)
     },
     saveChanges () {
@@ -59,6 +57,7 @@ export default {
     },
     cancelEdit () {
       this.isEditing = false
+      this.$emit('editProduct', this.isEditing)
     },
     changeStatus () {
       this.$emit('changeStatus', this.product.id, this.status)
@@ -66,17 +65,16 @@ export default {
   },
   computed: {
     getCardStyle () {
-      return { backgroundColor: 'white' }
-      // switch (this.status) {
-      //   case 'unprocessed':
-      //     return { backgroundColor: 'Plum' }
-      //   case 'develop':
-      //     return { backgroundColor: 'Khaki' }
-      //   case 'done':
-      //     return { backgroundColor: 'LightGreen' }
-      //   default:
-      //     return { backgroundColor: 'gray' }
-      // }
+      switch (this.status) {
+        case 'unprocessed':
+          return { backgroundColor: 'Lavender' }
+        case 'develop':
+          return { backgroundColor: 'LightYellow' }
+        case 'done':
+          return { backgroundColor: 'PaleGreen' }
+        default:
+          return { backgroundColor: 'white' }
+      }
     },
     getFormStyle () {
       switch (this.status) {

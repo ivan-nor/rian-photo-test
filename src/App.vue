@@ -24,23 +24,24 @@
   </div>
   <div class="grid-container">
     <div class="column drop-zone"
-      v-for="key in Object.keys(productsState)"
-      :key="key"
-      :style="getColumnStyle(key)"
-      @drop="ondrop($event, key)"
+      v-for="status in Object.keys(productsState)"
+      :key="status"
+      :style="getColumnStyle(status)"
+      @drop="ondrop($event, status)"
       @dragover.prevent
       @dragenter.prevent
     >
-      <h1>{{ key }}</h1>
-      <div v-for="item in getListProducts(key)" :key="item.id">
+      <h1>{{ status }}</h1>
+      <div v-for="item in getListProducts(status)" :key="item.id">
         <CardComponent
-          :status="key"
+          :status="status"
           :item="item"
-          @saveChanges="handleEditCard"
-          @deleteProduct="handleDeleteCard"
+          @saveChanges="handleEditProduct"
+          @deleteProduct="handleDeleteProduct"
           @changeStatus="handleChangeStatus"
-          draggable="true"
-          @dragstart="ondragstart($event, item, key)"
+          :draggable="isDraggable"
+          @dragstart="ondragstart($event, item, status)"
+          @editProduct="handleEditingProduct"
         />
       </div>
     </div>
@@ -57,20 +58,21 @@ export default {
   },
   data () {
     return {
-      products: [], // { 'id', 'title', 'price', 'description', 'category', 'image', 'rating' }
+      products: [],
       productsState: {
         unprocessed: [],
         develop: [],
         done: []
       },
-      isAddProduct: false, // добавить добавленiе карточки
+      isAddProduct: false,
       form: {
         description: '',
         price: null,
         title: '',
         category: '',
         image: null
-      }
+      },
+      isDraggable: true
     }
   },
   created () {
@@ -87,7 +89,7 @@ export default {
           const prevProductIdies = [...this.productsState.unprocessed, ...this.productsState.develop, ...this.productsState.done]
           const newProductsIdies = products.map((p) => p.id).filter((id) => !prevProductIdies.includes(id))
           this.productsState.unprocessed = [...this.productsState.unprocessed, ...newProductsIdies]
-          this.products = this.sortedOnRating(products.slice(0, 3))
+          this.products = this.sortedOnRating(products)
         })
     },
     async addProduct (product) {
@@ -114,11 +116,14 @@ export default {
       this.productsState[prevStatus] = [...this.productsState[prevStatus].filter((id) => id !== +productId)]
       this.productsState[nextStatus] = [...this.productsState[nextStatus], +productId]
     },
-    handleEditCard (editedProduct) {
+    handleEditProduct (editedProduct) {
       this.editProduct(editedProduct)
     },
-    async handleDeleteCard (product, status) {
-      console.log('APP delete card', product.id)
+    handleEditingProduct (isEditing) {
+      console.log('handle Editing', isEditing, this.isEditingProduct)
+      this.isDraggable = !isEditing
+    },
+    async handleDeleteProduct (product, status) {
       this.products = this.products.filter((p) => p.id !== product.id)
       this.productsState[status] = this.productsState[status].filter((id) => id !== product.id)
       await fetch(`https://fakestoreapi.com/products/${product.id}`, { method: 'DELETE' })
@@ -151,7 +156,7 @@ export default {
     getColumnStyle (status) {
       switch (status) {
         case 'unprocessed':
-          return { backgroundColor: 'Lavender' }
+          return { backgroundColor: 'Thistle' }
         case 'develop':
           return { backgroundColor: 'PaleGoldenrod' }
         case 'done':
