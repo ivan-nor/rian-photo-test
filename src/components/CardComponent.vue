@@ -3,6 +3,7 @@
     <img :src="product.image" alt="{{ product.title }}">
     <h4>{{ product.title }}</h4>
     <p class="category">{{ product.category }}</p>
+    <p class="rating">Рейтинг: {{ product.rating.rate }} | Оценок: {{ product.rating.count }}</p>
     <p class="description" v-if="!isEditing">
       {{ product.description }}
     </p>
@@ -38,6 +39,9 @@ export default {
       editedDescription: '',
       editedPrice: null
     }
+  },
+  created () {
+    console.log(this.product)
   },
   methods: {
     editProduct () {
@@ -199,11 +203,11 @@ p {
   text-align: center;
 }
 
-.category {
+.category, .rating {
   display: block;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #ccc;
+  color: #fbb72c;
 }
 </style>
