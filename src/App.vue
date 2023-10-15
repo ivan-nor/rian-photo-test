@@ -191,6 +191,8 @@ body {
   gap: 20px;
   max-width: 1000px;
   padding: 10px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .column {
