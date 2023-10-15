@@ -1,24 +1,33 @@
-# rian-photo-test
+# rian-photo-test - Канбан-система для работы с карточками продуктов
 
-## Project setup
+Данный проект представляет собой фронтенд-часть канбан-системы для работы с карточками продуктов. С использованием Vue.js 3, получаем данные о продуктах с внешнего источника и предоставляем пользователю возможность управлять этими карточками.
+
+# [Попробовать сейчас](https://rian-photo-test.vercel.app/)
+
+
+# Установка
+
+### Склонируйте репозиторий:
+```
+git clone https://github.com/ivan-nor/rian-photo-test
+```
+
+### Перейдите в директорию проекта:
+```
+cd rian-photo-test
+```
+
+### Установите зависимости:
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Запустите локальный сервер для разработки:
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Сборка для продакшена
 ```
 npm run build
 ```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
