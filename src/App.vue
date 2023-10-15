@@ -1,8 +1,8 @@
 <template>
   <div >
-    <div class="addForm">
-      <button class="addButton" @click="handleClickAddingForm" v-if="!isAddProduct">Добавить товар</button>
-      <div v-if="isAddProduct" class="form-container">
+    <div class="add-form">
+      <button class="add-button" @click="handleClickAddingForm" v-if="!isAddingProduct">Добавить товар</button>
+      <div v-if="isAddingProduct" class="form-container">
         <h3>Добавить товар</h3>
 
         <label for="inputTitle">Название:</label>
@@ -15,10 +15,10 @@
         <textarea v-model="form.description" name="inputDescription"></textarea>
 
         <label for="inputPrice">Цена:</label>
-        <input type="number" min="0" v-model="form.price" name="inputPrice">
+        <input type="number" min="0" v-model.number="form.price" name="inputPrice">
 
-        <button class="addProductButton" @click="handleAddProduct">Save</button>
-        <button class="cancelAddingProductButton" @click="cancelAddingProduct">Cancel</button>
+        <button class="edit-button" type="submit" @click="handleAddProduct">Save</button>
+        <button class="delete-button" @click="handleClickAddingForm">Cancel</button>
       </div>
     </div>
   </div>
@@ -36,12 +36,10 @@
         <CardComponent
           :status="status"
           :item="item"
-          @saveChanges="handleEditProduct"
+          @editProduct="handleEditProduct"
           @deleteProduct="handleDeleteProduct"
           @changeStatus="handleChangeStatus"
-          :draggable="isDraggable"
           @dragstart="ondragstart($event, item, status)"
-          @editProduct="handleEditingProduct"
         />
       </div>
     </div>
@@ -64,15 +62,14 @@ export default {
         develop: [],
         done: []
       },
-      isAddProduct: false,
+      isAddingProduct: false,
       form: {
         description: '',
         price: null,
         title: '',
         category: '',
         image: null
-      },
-      isDraggable: true
+      }
     }
   },
   created () {
@@ -91,15 +88,31 @@ export default {
           this.productsState.unprocessed = [...this.productsState.unprocessed, ...newProductsIdies]
           this.products = this.sortedOnRating(products)
         })
+        .catch(() => {
+          setTimeout(this.getProducts, 5000)
+        })
     },
     async addProduct (product) {
-      console.log('product', product)
       await fetch('https://fakestoreapi.com/products', { method: 'POST', body: JSON.stringify(product) })
-      this.getProducts()
+        .then(() => {
+          this.getProducts()
+        })
+        .catch(() => {
+          setTimeout(() => this.addProduct(product), 5000)
+        })
     },
     async editProduct (product) {
       await fetch(`https://fakestoreapi.com/products/${product.id}`, { method: 'PATCH', body: JSON.stringify(product) })
-      this.getProducts()
+        .then(() => {
+          this.getProducts()
+        })
+        .catch(() => {
+          setTimeout(() => this.editProduct(product), 5000)
+        })
+    },
+    async deleteProduct (id) {
+      await fetch(`https://fakestoreapi.com/products/${id}`, { method: 'DELETE' })
+        .catch(() => this.deleteProduct(id), 5000)
     },
     ondragstart (evt, item, status) {
       evt.dataTransfer.setData('productId', item.id)
@@ -116,28 +129,23 @@ export default {
       this.productsState[prevStatus] = [...this.productsState[prevStatus].filter((id) => id !== +productId)]
       this.productsState[nextStatus] = [...this.productsState[nextStatus], +productId]
     },
-    handleEditProduct (editedProduct) {
-      this.editProduct(editedProduct)
-    },
-    handleEditingProduct (isEditing) {
-      console.log('handle Editing', isEditing, this.isEditingProduct)
-      this.isDraggable = !isEditing
-    },
-    async handleDeleteProduct (product, status) {
+    handleDeleteProduct (product, status) {
       this.products = this.products.filter((p) => p.id !== product.id)
       this.productsState[status] = this.productsState[status].filter((id) => id !== product.id)
-      await fetch(`https://fakestoreapi.com/products/${product.id}`, { method: 'DELETE' })
+      this.deleteProduct(product.id)
+    },
+    handleEditProduct (editedProduct) {
+      this.editProduct(editedProduct)
     },
     handleChangeStatus (productId, prevStatus) {
       const nextStatus = (prevStatus === 'unprocessed') ? 'develop' : 'done'
       this.moveProduct(productId, prevStatus, nextStatus)
     },
     handleClickAddingForm () {
-      this.isAddProduct = true
+      this.isAddingProduct = !this.isAddingProduct
     },
     handleAddProduct () {
-      console.log('APP adding product')
-      this.isAddProduct = false
+      this.isAddingProduct = false
       this.addProduct({ ...this.form })
       this.form = {
         description: '',
@@ -146,9 +154,6 @@ export default {
         category: '',
         image: null
       }
-    },
-    cancelAddingProduct () {
-      this.isAddProduct = false
     },
     sortedOnRating (arr) { // сортируем каждый раз когда идет обновление
       return arr.sort((a, b) => (a.rating.rate < b.rating.rate) ? 1 : -1)
@@ -193,10 +198,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  min-width: 200px; /* Фиксированная ширина для колонки */
+  min-width: 200px;
   padding: 20px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  border-radius: 10px;
   min-height: 800px;
   align-items: center;
 }
@@ -207,7 +212,7 @@ body {
   color: #767c81;
 }
 
-.addButton {
+.add-button {
   background-color: goldenrod;
   color: #fff;
   border: none;
@@ -219,11 +224,11 @@ body {
   width: 300px;
 }
 
-button:hover {
+.add-button:hover {
   background-color: blue;
 }
 
-.addForm {
+.add-form {
   max-height: 100%;
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -232,9 +237,9 @@ button:hover {
   flex-direction: column;
   align-items: center;
   text-align: justify;
-  margin: 10px 10px;
+  margin: 10px;
   color: #333;
-  padding: 10px 10px ;
+  padding: 10px;
   background-color: #f9f9f9;
 }
 
