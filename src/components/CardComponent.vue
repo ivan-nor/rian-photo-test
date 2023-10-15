@@ -1,5 +1,5 @@
 <template>
-  <div class="card" v-if="product" :style="getCardStyle">
+  <div class="card" v-if="product" :style="getCardStyle" :draggable="!isEditing">
     <img :src="product.image" alt="{{ product.title }}">
     <h4>{{ product.title }}</h4>
     <p class="category">{{ product.category }}</p>
@@ -17,7 +17,7 @@
       <label for="editedPrice">Цена:</label>
       <input type="number" id="editedPrice" v-model="editedPrice">
       <button @click="saveChanges">Сохранить</button>
-      <button @click="cancelEdit">Отменить</button>
+      <button @click="editProduct">Отменить</button>
     </div>
     <button name="changeStatus" @click="changeStatus" v-if="status !== 'done'">{{ getButtonText }}</button>
   </div>
@@ -41,10 +41,9 @@ export default {
   },
   methods: {
     editProduct () {
-      this.isEditing = true
+      this.isEditing = !this.isEditing
       this.editedDescription = this.product.description
       this.editedPrice = this.product.price
-      this.$emit('editProduct', this.isEditing)
     },
     deleteProduct () {
       this.$emit('deleteProduct', this.product, this.status)
@@ -53,11 +52,7 @@ export default {
       this.isEditing = false
       this.product.description = this.editedDescription
       this.product.price = this.editedPrice
-      this.$emit('saveChanges', this.product)
-    },
-    cancelEdit () {
-      this.isEditing = false
-      this.$emit('editProduct', this.isEditing)
+      this.$emit('editProduct', this.product)
     },
     changeStatus () {
       this.$emit('changeStatus', this.product.id, this.status)
